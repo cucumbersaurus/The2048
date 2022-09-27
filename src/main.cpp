@@ -40,6 +40,12 @@ int gameoverCheckBoard[4][4];
 int score = 0;
 bool gameOver = false;
 
+string player;
+
+void clear(){
+    cout<<"\x1B[2J\x1B[3J\x1B[H";
+}
+
 void gotoxy(int x, int y) {
     COORD pos = { x, y };
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
@@ -168,16 +174,24 @@ void print() {
         }
     }
 
-    gotoxy(57, 4);
+    gotoxy(57, 5);
     setColor(LIGHT_BLUE, BLACK);
-    cout << "score : ";
+    cout << "점수 : ";
     setColor(LIGHT_RED, BLACK);
     cout << score;
+
+    gotoxy(57, 4);
+    setColor(BLUE, BLACK);
+    cout << "플레이어 : ";
+    setColor(CYAN, BLACK);
+    cout << player;
 }
 
 //미완성
 void printGameOverMessage() {
-    cout << "game over";
+        clear();
+    cout << "game over"<<endl;
+
 }
 
 void newNum() {
@@ -195,29 +209,20 @@ void newNum() {
 }
 
 void rotate() {
-    int tmp = board[0][0];
-    board[0][0] = board[3][0];
-    board[3][0] = board[3][3];
-    board[3][3] = board[0][3];
-    board[0][3] = tmp;
+    int tmp[4][4];
 
-    tmp = board[0][1];
-    board[0][1] = board[2][0];
-    board[2][0] = board[3][2];
-    board[3][2] = board[1][3];
-    board[1][3] = tmp;
+    for(int i=0;i<4;i++){
+        for(int j=0;j<4;j++){
+            tmp[j][4-i-1] = board[i][j];
+        }
+    }
 
-    tmp = board[0][2];
-    board[0][2] = board[1][0];
-    board[1][0] = board[3][1];
-    board[3][1] = board[2][3];
-    board[2][3] = tmp;
+    for(int i=0;i<4;i++){
+        for(int j=0;j<4;j++){
+            board[i][j] = tmp[i][j];
+        }
+    }
 
-    tmp = board[1][1];
-    board[1][1] = board[2][1];
-    board[2][1] = board[2][2];
-    board[2][2] = board[1][2];
-    board[1][2] = tmp;
 }
 
 void push() {
@@ -387,8 +392,77 @@ void getKey() {
 
     if (isFull()) {
         if (isGameOver()) {
+            clear();
             printGameOverMessage();
             gameOver = true;
+        }
+    }
+}
+
+void getPlayerName(){
+
+    setColor(BLUE, BLACK);
+    cout<<"아래에 이름을 입력하세요(영문, 숫자만 가능)"<<endl;
+    setColor(CYAN, BLACK);
+    cout<<"이름 : ";
+
+    while(true){
+        char ch;
+        ch = _getch();
+        
+        if(ch==0x08&&player.size()>=1){
+            player.erase(player.end()-1);
+        }
+        if(ch==0x0d){
+            break;
+        }
+        else if(ch>='0'&&ch<='9'||ch>='a'&&ch<='z'||ch>='A'&&ch<='Z'){
+            player.push_back(ch);
+        }
+
+        clear();
+        setColor(BLUE, BLACK);
+        cout<<"아래에 이름을 입력하세요"<<endl;
+        setColor(CYAN, BLACK);
+        cout<<"이름 : ";
+        cout<<player<<endl<<(int)ch;
+    }
+    clear();
+}
+
+void onGame(){
+
+    gameOver = false;
+    score = 0;
+
+    for(int i=0;i<4;i++){
+        for(int j=0;j<4;j++){
+            board[i][j]=0;
+            last_board[i][j]=0;
+            gameoverCheckBoard[i][j]=0;
+        }
+    }
+    
+    newNum();
+    newNum();
+    print();
+
+    while (!gameOver) {
+        getKey();
+        print();
+    }
+}
+
+bool isKeepPlaying(){
+    cout<<"게임이 종료되었습니다. 다시 하겠습니까?"<<endl<<"계속 | y"<<endl<<"그만 | n";
+    while (true)
+    {   
+        char ch = _getch();
+        if(ch=='y'||ch=='Y'){
+            return true;
+        }
+        else if(ch=='n'||ch=='N'){
+            return false;
         }
     }
 }
@@ -398,17 +472,14 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(0);
     srand(time(NULL));
-
-    newNum();
-    newNum();
-    print();
-
-    double max_t = 0;
-
-    while (true) {
-        getKey();
-        print();
+    
+    bool keepPlay = true;
+    while (keepPlay){
+    getPlayerName();
+    onGame();
+    keepPlay = isKeepPlaying();
     }
+    
 
     system("pause");
     return 0;

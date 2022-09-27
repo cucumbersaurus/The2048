@@ -1,22 +1,35 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-
-        
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "(gdb) 시작",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/${fileBasenameNoExtension}.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/82103/source/repos/The2048/src",
+      "program": "c:/Users/82103/source/repos/The2048/src/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
         {
-            "name": "(gdb) 시작",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/src/${fileBasenameNoExtension}.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
         }
-
-
-
-
-    ]
+      ]
+    }
+  ]
 }
