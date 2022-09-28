@@ -189,7 +189,8 @@ void print() {
 
 //미완성
 void printGameOverMessage() {
-        clear();
+    clear();
+    setColor(RED, BLACK);
     cout << "game over"<<endl;
 
 }
@@ -226,35 +227,60 @@ void rotate() {
 }
 
 void push() {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 1; j < 4; j++) {
-
-            if (board[i][j] != 0) {
-                int idx = j;
-
-                for (int k = j - 1; k >= 0; k--) {
-                    if (board[i][k] != 0) break;
-                    idx = k;
-                }
-
-                int tmp = board[i][j];
-                board[i][j] = board[i][idx];
-                board[i][idx] = tmp;
+    int tmp[4][4] = {0};
+    for(int i=0;i<4;i++){
+        for(int j=0,idx=0;j<4;j++){
+            if(board[i][j]!=0){
+                tmp[i][idx]=board[i][j];
+                idx++;
             }
         }
     }
+
+    for(int i=0;i<4;i++){
+        for(int j=0;j<4;j++){
+            board[i][j]=tmp[i][j];
+        }
+    }
+    // for (int i = 0; i < 4; i++) {
+    //     for (int j = 1; j < 4; j++) {
+
+    //         if (board[i][j] != 0) {
+    //             int idx = j;
+
+    //             for (int k = j - 1; k >= 0; k--) {
+    //                 if (board[i][k] != 0) break;
+    //                 idx = k;
+    //             }
+
+    //             int tmp = board[i][j];
+    //             board[i][j] = board[i][idx];
+    //             board[i][idx] = tmp;
+    //         }
+    //     }
+    // }
 }
 
 void merge() {
     
     push();
 
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 3; j++) {
-            if (board[i][j] == board[i][j + 1]) {
-                board[i][j] *= 2;
-                score += board[i][j];
-                board[i][j + 1] = 0;
+    // for (int i = 0; i < 4; i++) {
+    //     for (int j = 0; j < 3; j++) {
+    //         if (board[i][j] == board[i][j + 1]) {
+    //             board[i][j] *= 2;
+    //             score += board[i][j];
+    //             board[i][j + 1] = 0;
+    //         }
+    //     }
+    // }
+
+    for(int i=0;i<4;i++){
+        for(int j=1;j<4;j++){
+            if(board[i][j]==board[i][j-1]){
+                board[i][j]+=board[i][j-1];
+                board[i][j-1]=0;
+                j++;
             }
         }
     }
@@ -270,7 +296,9 @@ void copy() {
     }
 }
 
-void copyBoardToOver() {
+void 
+
+copyBoardToOver() {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             gameoverCheckBoard[i][j] = board[i][j];
@@ -357,11 +385,24 @@ bool isGameOver() {
     down();
     d = isSame();
 
+    copyOverToBoard();
+
     if (l && r && u && d) {
         return true;
     }
     return false;
 }
+
+
+void checkGameOver(){
+    if (isFull()) {
+        if (isGameOver()) {
+            printGameOverMessage();
+            gameOver = true;
+        }
+    }
+}
+
 
 void getKey() {
     int key = _getch();//2바이트라서 1바이트 먼저 제거
@@ -390,16 +431,11 @@ void getKey() {
         newNum();
     }
 
-    if (isFull()) {
-        if (isGameOver()) {
-            clear();
-            printGameOverMessage();
-            gameOver = true;
-        }
-    }
+    checkGameOver();
 }
 
 void getPlayerName(){
+    clear();
 
     setColor(BLUE, BLACK);
     cout<<"아래에 이름을 입력하세요(영문, 숫자만 가능)"<<endl;
@@ -445,11 +481,10 @@ void onGame(){
     
     newNum();
     newNum();
-    print();
 
     while (!gameOver) {
-        getKey();
         print();
+        getKey();
     }
 }
 
