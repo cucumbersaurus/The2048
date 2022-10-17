@@ -27,6 +27,24 @@ enum Colors{
     WHITE
 };
 
+string GAMEOVER[] = {
+    "  ■■■■    ■■■    ■      ■ ■■■■■",
+    "■          ■      ■  ■      ■  ■",
+    "■          ■      ■  ■■  ■■  ■",
+    "■    ■■  ■■■■■  ■  ■  ■  ■■■■■",
+    "■      ■  ■      ■  ■      ■  ■",
+    "■      ■  ■      ■  ■      ■  ■",
+    "  ■■      ■      ■  ■      ■  ■■■■■",
+    " ",
+    "  ■■■    ■      ■  ■■■■■  ■■■■",
+    "■      ■  ■      ■  ■          ■      ■",
+    "■      ■  ■      ■  ■          ■      ■",
+    "■      ■    ■  ■    ■■■■■  ■■■■",
+    "■      ■    ■  ■    ■          ■      ■",
+    "■      ■      ■      ■          ■      ■",
+    "  ■■■        ■      ■■■■■  ■      ■",
+};
+
 int board[4][4] = {
     {0, 0, 0, 0},
     {0, 0, 0, 0},
@@ -40,10 +58,17 @@ int gameoverCheckBoard[4][4];
 int score = 0;
 bool gameOver = false;
 
-string player;
+int maxn=0;
 
-void clear(){
-    cout<<"\x1B[2J\x1B[3J\x1B[H";
+//string player;
+void setConsole(){
+    system("mode con: cols=80 lines=28");
+    //system("mode con: cols=800 lines=280");
+
+    CONSOLE_CURSOR_INFO cursorInfo;
+	cursorInfo.dwSize = 1;
+	cursorInfo.bVisible = false;
+	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
 
 void gotoxy(int x, int y) {
@@ -54,6 +79,15 @@ void gotoxy(int x, int y) {
 void setColor(Colors foreground, Colors background) {
     int color = foreground + background * 16;
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
+}
+
+
+void clear(){
+    //cout<<"\x1B[2J\x1B[3J\x1B[H";
+    for(int i=0;i<28;i++){
+        gotoxy(0, i);
+        cout<<"          "<<"          "<<"          "<<"          "<<"          "<<"          "<<"          "<<"          ";
+    }
 }
 
 void setNumberColor(int num) {
@@ -180,31 +214,55 @@ void print() {
     setColor(LIGHT_RED, BLACK);
     cout << score;
 
-    gotoxy(57, 4);
-    setColor(BLUE, BLACK);
-    cout << "플레이어 : ";
-    setColor(CYAN, BLACK);
-    cout << player;
+    gotoxy(57, 7);
+    setColor(LIGHT_BLUE, BLACK);
+    cout << "가장 큰 블럭 : ";
+    setColor(LIGHT_RED, BLACK);
+    cout << maxn;
+
+    // gotoxy(57, 4);
+    // setColor(BLUE, BLACK);
+    // cout << "플레이어 : ";
+    // setColor(CYAN, BLACK);
+    // cout << player;
 }
 
 //미완성
 void printGameOverMessage() {
-    clear();
-    setColor(RED, BLACK);
-    cout << "game over"<<endl;
+
+    for(int i=0;i<15;i++){
+        if(i<7) setColor(LIGHT_BLUE, BLACK);
+        else setColor(LIGHT_RED, BLACK);
+        
+        for(int j=0;j<GAMEOVER[i].size();j++){
+            if(GAMEOVER[i][j] == ' '){
+                continue;
+            }
+            else{
+                gotoxy(j+10, i+3);
+                cout<<GAMEOVER[i][j];
+            }
+        }
+        cout<<endl;
+    }
 
 }
 
-void newNum() {
+int newNum() {
     int randpos = 0;
     while (true) {
         randpos = rand() % 16;
         if (board[randpos / 4][randpos % 4] == 0) {//빈칸 찾기
             int randnum = rand() % 10;
 
-            if (randnum == 0) board[randpos / 4][randpos % 4] = 4;//10%확률로 4
-            else board[randpos / 4][randpos % 4] = 2;//나머지 2
-            return;
+            if (randnum == 0){
+                board[randpos / 4][randpos % 4] = 4;//10% 확률로 4
+                return 4;
+            }
+            else {
+                board[randpos / 4][randpos % 4] = 2;//나머지 2
+                return 2;
+            }
         }
     }
 }
@@ -242,42 +300,19 @@ void push() {
             board[i][j]=tmp[i][j];
         }
     }
-    // for (int i = 0; i < 4; i++) {
-    //     for (int j = 1; j < 4; j++) {
-
-    //         if (board[i][j] != 0) {
-    //             int idx = j;
-
-    //             for (int k = j - 1; k >= 0; k--) {
-    //                 if (board[i][k] != 0) break;
-    //                 idx = k;
-    //             }
-
-    //             int tmp = board[i][j];
-    //             board[i][j] = board[i][idx];
-    //             board[i][idx] = tmp;
-    //         }
-    //     }
-    // }
 }
 
-void merge() {
+void merge(bool checkMode) {
     
     push();
 
-    // for (int i = 0; i < 4; i++) {
-    //     for (int j = 0; j < 3; j++) {
-    //         if (board[i][j] == board[i][j + 1]) {
-    //             board[i][j] *= 2;
-    //             score += board[i][j];
-    //             board[i][j + 1] = 0;
-    //         }
-    //     }
-    // }
-
     for(int i=0;i<4;i++){
         for(int j=1;j<4;j++){
-            if(board[i][j]==board[i][j-1]){
+            if(board[i][j]!=0&&board[i][j]==board[i][j-1]){
+                if(!checkMode){
+                    score+=board[i][j]*2;
+                    maxn = max(maxn, board[i][j]*2);
+                }
                 board[i][j]+=board[i][j-1];
                 board[i][j-1]=0;
                 j++;
@@ -314,29 +349,29 @@ void copyOverToBoard() {
     }
 }
 
-void left() {
-    merge();
+void left(bool checkMode) {
+    merge(checkMode);
 }
 
-void right() {
+void right(bool checkMode) {
     rotate();
     rotate();
-    merge();
+    merge(checkMode);
     rotate();
-    rotate();
-}
-
-void up() {
-    rotate();
-    rotate();
-    rotate();
-    merge();
     rotate();
 }
 
-void down() {
+void up(bool checkMode) {
     rotate();
-    merge();
+    rotate();
+    rotate();
+    merge(checkMode);
+    rotate();
+}
+
+void down(bool checkMode) {
+    rotate();
+    merge(checkMode);
     rotate();
     rotate();
     rotate();
@@ -370,19 +405,19 @@ bool isGameOver() {
 
     copyBoardToOver();
 
-    left();
+    left(true);
     l = isSame();
 
     copyOverToBoard();
-    right();
+    right(true);
     r = isSame();
 
     copyOverToBoard();
-    up();
+    up(true);
     u = isSame();
 
     copyOverToBoard();
-    down();
+    down(true);
     d = isSame();
 
     copyOverToBoard();
@@ -413,16 +448,16 @@ void getKey() {
         key = _getch();
         switch (key) {
         case 72://위쪽
-            up();
+            up(false);
             break;
         case 77://오른쪽
-            right();
+            right(false);
             break;
         case 80://아래쪽
-            down();
+            down(false);
             break;
         case 75://왼쪽
-            left();
+            left(false);
             break;
         }
     }
@@ -434,42 +469,13 @@ void getKey() {
     checkGameOver();
 }
 
-void getPlayerName(){
-    clear();
-
-    setColor(BLUE, BLACK);
-    cout<<"아래에 이름을 입력하세요(영문, 숫자만 가능)"<<endl;
-    setColor(CYAN, BLACK);
-    cout<<"이름 : ";
-
-    while(true){
-        char ch;
-        ch = _getch();
-        
-        if(ch==0x08&&player.size()>=1){
-            player.erase(player.end()-1);
-        }
-        if(ch==0x0d){
-            break;
-        }
-        else if(ch>='0'&&ch<='9'||ch>='a'&&ch<='z'||ch>='A'&&ch<='Z'){
-            player.push_back(ch);
-        }
-
-        clear();
-        setColor(BLUE, BLACK);
-        cout<<"아래에 이름을 입력하세요"<<endl;
-        setColor(CYAN, BLACK);
-        cout<<"이름 : ";
-        cout<<player<<endl<<(int)ch;
-    }
-    clear();
-}
-
 void onGame(){
+
+    clear();
 
     gameOver = false;
     score = 0;
+    maxn=0;
 
     for(int i=0;i<4;i++){
         for(int j=0;j<4;j++){
@@ -478,9 +484,11 @@ void onGame(){
             gameoverCheckBoard[i][j]=0;
         }
     }
-    
-    newNum();
-    newNum();
+
+    for(int i=0;i<2;i++){
+        int tmp = newNum();
+        maxn = max(maxn, tmp);
+    }
 
     while (!gameOver) {
         print();
@@ -497,6 +505,7 @@ bool isKeepPlaying(){
             return true;
         }
         else if(ch=='n'||ch=='N'){
+            cout<<endl;
             return false;
         }
     }
@@ -504,18 +513,25 @@ bool isKeepPlaying(){
 
 int main() {
 
+    setConsole();
     ios::sync_with_stdio(false);
     cin.tie(0);
     srand(time(NULL));
     
     bool keepPlay = true;
+
+    //printGameOverMessage();
+
+    // for(int i=0;i<7;i++){
+    //     cout<<GAMEOVER[i]<<endl;
+    // }
+
+    
     while (keepPlay){
-    getPlayerName();
+    //getPlayerName();
     onGame();
-    keepPlay = isKeepPlaying();
+    keepPlay = isKeepPlaying(); 
     }
     
-
-    system("pause");
     return 0;
 }
