@@ -28,14 +28,14 @@ enum Colors{
 };
 
 string GAMEOVER[] = {
-    "  ■■■■    ■■■    ■      ■ ■■■■■",
+    "  ■■■■    ■■■    ■      ■  ■■■■■",
     "■          ■      ■  ■      ■  ■",
     "■          ■      ■  ■■  ■■  ■",
     "■    ■■  ■■■■■  ■  ■  ■  ■■■■■",
     "■      ■  ■      ■  ■      ■  ■",
     "■      ■  ■      ■  ■      ■  ■",
-    "  ■■      ■      ■  ■      ■  ■■■■■",
-    " ",
+    "  ■■■    ■      ■  ■      ■  ■■■■■",
+    "                                             ",
     "  ■■■    ■      ■  ■■■■■  ■■■■",
     "■      ■  ■      ■  ■          ■      ■",
     "■      ■  ■      ■  ■          ■      ■",
@@ -62,7 +62,7 @@ int maxn=0;
 
 //string player;
 void setConsole(){
-    system("mode con: cols=80 lines=28");
+    system("mode con: cols=57 lines=31");
     //system("mode con: cols=800 lines=280");
 
     CONSOLE_CURSOR_INFO cursorInfo;
@@ -84,9 +84,9 @@ void setColor(Colors foreground, Colors background) {
 
 void clear(){
     //cout<<"\x1B[2J\x1B[3J\x1B[H";
-    for(int i=0;i<28;i++){
+    for(int i=0;i<31;i++){
         gotoxy(0, i);
-        cout<<"          "<<"          "<<"          "<<"          "<<"          "<<"          "<<"          "<<"          ";
+        cout<<"          "<<"          "<<"          "<<"          "<<"          "<<"       ";
     }
 }
 
@@ -208,13 +208,13 @@ void print() {
         }
     }
 
-    gotoxy(57, 5);
+    gotoxy(0, 29);
     setColor(LIGHT_BLUE, BLACK);
     cout << "점수 : ";
     setColor(LIGHT_RED, BLACK);
     cout << score;
 
-    gotoxy(57, 7);
+    gotoxy(28, 29);
     setColor(LIGHT_BLUE, BLACK);
     cout << "가장 큰 블럭 : ";
     setColor(LIGHT_RED, BLACK);
@@ -231,17 +231,19 @@ void print() {
 void printGameOverMessage() {
 
     for(int i=0;i<15;i++){
+        gotoxy(5, i+3);
+        setColor(BLACK, BLACK);
+        cout<<"                                              ";
+    }
+
+    for(int i=0;i<15;i++){
         if(i<7) setColor(LIGHT_BLUE, BLACK);
         else setColor(LIGHT_RED, BLACK);
         
         for(int j=0;j<GAMEOVER[i].size();j++){
-            if(GAMEOVER[i][j] == ' '){
-                continue;
-            }
-            else{
-                gotoxy(j+10, i+3);
-                cout<<GAMEOVER[i][j];
-            }
+            gotoxy(j+4, i+3);
+            if(GAMEOVER[i][j] == ' ') continue;
+            else cout<<GAMEOVER[i][j];
         }
         cout<<endl;
     }
@@ -497,16 +499,18 @@ void onGame(){
 }
 
 bool isKeepPlaying(){
-    cout<<"게임이 종료되었습니다. 다시 하겠습니까?"<<endl<<"계속 | y"<<endl<<"그만 | n";
+    gotoxy(15, 19);
+    setColor(BROWN, BLACK);
+    cout<<"엔터를 눌러 게임을 시작하기";
     while (true)
     {   
         char ch = _getch();
-        if(ch=='y'||ch=='Y'){
+        //cout<<(int)ch;
+        if(ch==13){
             return true;
         }
-        else if(ch=='n'||ch=='N'){
-            cout<<endl;
-            return false;
+        else  if(ch==224){
+            _getch();
         }
     }
 }
